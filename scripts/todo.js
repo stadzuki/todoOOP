@@ -11,25 +11,48 @@ class Todo{
     }
 
     handler(){
+        let timer;
         const todo = document.querySelectorAll('.todo');
         todo.forEach(btn => btn.addEventListener('click', (e) => {
             const {target} = e,
-                key = target.parentNode.parentNode.key;
+                li = target.parentNode.parentNode;
 
-            if(target.matches('.todo-remove')){
+            if(target.matches('.todo-edit')) {
+                const editStr = prompt('Введите изменения', li.textContent.trim());
+                
+                if(editStr.value === li.textContent.trim()) return;
                 this.todoData.forEach(item => {
-                    if(item.key === key) {
-                        this.todoData.delete(key);
+                    if(item.key === li.key) {
+                        const newTodo = {
+                            value: editStr,
+                            complete: item.complete,
+                            key: item.key
+                        }
+                        this.todoData.set(li.key, newTodo);
                         this.renderData();
                         this.addToStorage();
                     }
                 })
+
+            }
+
+            if(target.matches('.todo-remove')) {
+                li.classList.add('delete-li');
+                timer = setTimeout(() => {
+                    this.todoData.forEach(item => {
+                        if(item.key === li.key) {
+                            this.todoData.delete(li.key);
+                            this.renderData();
+                            this.addToStorage();
+                        }
+                    })
+                }, 500)
             }
 
             if(target.matches('.todo-complete')) {
                 if(target.closest('.todo-list')) {
                     this.todoData.forEach(item => {
-                        if(item.key === key) {
+                        if(item.key === li.key) {
                             item.complete = true;
                             this.renderData();
                             this.addToStorage();
@@ -37,7 +60,7 @@ class Todo{
                     })
                 } else if(target.closest('.todo-completed')) {
                     this.todoData.forEach(item => {
-                        if(item.key === key) {
+                        if(item.key === li.key) {
                             item.complete = false;
                             this.renderData();
                             this.addToStorage();
@@ -66,6 +89,7 @@ class Todo{
         li.insertAdjacentHTML('beforeend', `
             <span class="text-todo">${elem.value}</span>
             <div class="todo-buttons">
+                <button class="todo-edit"></button>
                 <button class="todo-remove"></button>
                 <button class="todo-complete"></button>
             </div>
